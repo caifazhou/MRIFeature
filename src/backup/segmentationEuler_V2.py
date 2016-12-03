@@ -16,7 +16,7 @@ def show_slices(slices):
 def image_segmentation(in_file_name, out_file_name, show_image, numseg):
     n1_img = nib.load(in_file_name)
     img_data = n1_img.get_data()
-    # print(img_data.shape)
+    print(img_data.shape)
 
     slice = np.zeros((img_data.shape[0],img_data.shape[1], img_data.shape[2]))
     segm= np.zeros((img_data.shape[0],img_data.shape[1], img_data.shape[2]), dtype = np.int16)
@@ -58,7 +58,6 @@ def image_segmentation(in_file_name, out_file_name, show_image, numseg):
     save_img = nib.Nifti1Image(img_data, np.eye(4))
     nib.save(save_img, out_file_name)
     return 0
-
 def segRunTrain(MRIIndex, numseg, inputDirBase, outputDirBase):
     i = MRIIndex
     file_name_input = inputDirBase + "set_train/train_" + str(i) + ".nii"
@@ -75,16 +74,33 @@ def segRunTest(MRIIndex, numseg, inputDirBase, outputDirBase):
 # main begins
 # load data
 
+# train_dataFile_size = 278
+# test_dataFile_size = 138
 
 numSeg = np.int(sys.argv[1])
 mriIndex = np.int(sys.argv[2])
 flag = np.int(sys.argv[3])
 
-inputBaseDir = "../MLP2_Tschick/data/"
-eulerScratch = "/cluster/scratch/czhou/"
-outputBaseDir = eulerScratch + "seg" + str(numSeg) + "/"
+inputBaseDir = "../testData/testOrg/"
+outputBaseDir = "../seg" + str(numSeg) + "/"
 
 if flag == 0:
     segRunTrain(mriIndex, numSeg, inputBaseDir, outputBaseDir)
 else:
     segRunTest(mriIndex, numSeg, inputBaseDir, outputBaseDir)
+
+# numSeg = 20
+# mriIndex = 1
+
+
+# for i in range(1):
+#     file_name_input = "../testData/testOrg/set_train/train_" + str(i+1) + ".nii"
+#     file_name_output = "../testData/testSeg/set_train_seg/train_" + str(i+1) + ".nii"
+#     image_segmentation(file_name_input, file_name_output, False, numSeg)
+
+# for i in range(9, test_dataFile_size-1):
+#     file_name_input = "../data/set_test/test_" + str(i+1) + ".nii"
+#     # example_ni1 = os.path.join(data_path, file_name_input)
+#     file_name_output = "../data/set_test_seg/test_" + str(i+1) + ".nii"
+#     # save_example_ni1 = os.path.join(data_path, file_name_output)
+#     image_segmentation(file_name_input,file_name_output, show_image=False)

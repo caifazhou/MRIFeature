@@ -1,15 +1,9 @@
+import matplotlib.pyplot as plt
 import nibabel as nib
-import skimage
-from skimage import exposure, segmentation, color
-from skimage import feature
-from skimage.future import graph
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.pyplot as plt
-from nibabel.testing import data_path
-import os
-from IPython.display import *
- 
+import skimage
+from skimage import segmentation
+import sys
 
 def show_slices(slices):
     fig, axes = plt.subplots(1, len(slices), figsize=(8, 3), sharex=True, sharey=True)
@@ -19,43 +13,32 @@ def show_slices(slices):
                             bottom=0.02, left=0.02, right=0.98)
     plt.show()
 
-def image_segmentation(in_file_name, out_file_name, show_image):
-    #example_ni1 = os.path.join(data_path, in_file_name)
+def image_segmentation(in_file_name, out_file_name, show_image, numseg):
     n1_img = nib.load(in_file_name)
     img_data = n1_img.get_data()
     print(img_data.shape)
-    #save_example_ni1 = os.path.join(data_path, out_file_name)
 
-    slice = np.zeros((176,176,208))
-    segm= np.zeros((176,176,208), dtype = np.int16)
-    for i in range(175):
-        slice[i] = img_data[:,:,i,0]
-        #slice[i] = exposure.rescale_intensity(slice[i], out_range=(0, 256))
-        #img = color.gray2rgb(slice[i])
+    slice = np.zeros((img_data.shape[0],img_data.shape[1], img_data.shape[2]))
+    segm= np.zeros((img_data.shape[0],img_data.shape[1], img_data.shape[2]), dtype = np.int16)
+    for i in range(img_data.shape[2]):
+        slice[:,:, i] = img_data[:, :, i, 0]
         if (slice[i].min() >= 0):
-            labels1 = segmentation.slic(slice[i], compactness=30, n_segments=400, multichannel=False)
-            segm[i] = skimage.img_as_int(labels1)
-            #out1 = color.label2rgb(labels1, img, kind='avg')
-            #g = graph.rag_mean_color(img, labels1, mode='similarity')
-            #labels2 = graph.cut_normalized(labels1, g)
-            #out2 = color.label2rgb(labels2, img, kind='avg')
-            #segm[i] = color.rgb2gray(out1)
-            #segm[i] = out1
-            #print(segm[i].dtype)
+            labels1 = segmentation.slic(slice[:,:, i], compactness=30, n_segments=numseg, multichannel=False)
+            segm[:, :, i] = skimage.img_as_int(labels1)
 
 
     if (show_image):
         show_slices([slice[100], slice[110], slice[120]])
         plt.suptitle("slices")
 
-    for i in range(175):
-        img_data[:,:,i,0] = segm[i]        
+    for i in range(img_data.shape[2]):
+        img_data[:, :, i, 0] = segm[:, :, i]
 
     if (show_image):
         # display results
         fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(8, 3), sharex=True, sharey=True)
 
-        ax1.imshow(img_data[:,:,100,0])
+        ax1.imshow(img_data[:,:, 100, 0])
         ax1.axis('off')
         ax1.set_title('image 100', fontsize=20)
 
@@ -75,24 +58,49 @@ def image_segmentation(in_file_name, out_file_name, show_image):
     save_img = nib.Nifti1Image(img_data, np.eye(4))
     nib.save(save_img, out_file_name)
     return 0
+def segRunTrain(MRIIndex, numseg, inputDirBase, outputDirBase):
+    i = MRIIndex
+    file_name_input = inputDirBase + "set_train/train_" + str(i) + ".nii"
+    file_name_output = outputDirBase + "set_train_seg/train_" + str(i) + ".nii"
+    image_segmentation(file_name_input, file_name_output, False, numseg)
+    return 0
 
+def segRunTest(MRIIndex, numseg, inputDirBase, outputDirBase):
+    i = MRIIndex
+    file_name_input = inputDirBase + "set_test/test_" + str(i) + ".nii"
+    file_name_output = outputDirBase + "set_test_seg/test_" + str(i) + ".nii"
+    image_segmentation(file_name_input, file_name_output, False, numseg)
+    return 0
 # main begins
 # load data
 
-train_dataFile_size = 278
-test_dataFile_size = 138
+# train_dataFile_size = 278
+# test_dataFile_size = 138
+
+numSeg = np.int(sys.argv[1])
+mriIndex = np.int(sys.argv[2])
+flag = np.int(sys.argv[3])
+
+inputBaseDir = "../testData/testOrg/"
+outputBaseDir = "../seg" + str(numSeg) + "/"
+
+if flag == 0:
+    segRunTrain(mriIndex, numSeg, inputBaseDir, outputBaseDir)
+else:
+    segRunTest(mriIndex, numSeg, inputBaseDir, outputBaseDir)
+
+# numSeg = 20
+# mriIndex = 1
 
 
-for i in range(9,train_dataFile_size-1):
-    file_name_input = "../data/set_train/train_" + str(i+1) + ".nii"
-    # example_ni1 = os.path.join(data_path, file_name_input)
-    file_name_output = "../data/set_train_seg/train_" + str(i+1) + ".nii"
-    # save_example_ni1 = os.path.join(data_path, file_name_output)
-    image_segmentation(file_name_input,file_name_output, show_image=False)
+# for i in range(1):
+#     file_name_input = "../testData/testOrg/set_train/train_" + str(i+1) + ".nii"
+#     file_name_output = "../testData/testSeg/set_train_seg/train_" + str(i+1) + ".nii"
+#     image_segmentation(file_name_input, file_name_output, False, numSeg)
 
-for i in range(9,test_dataFile_size-1):
-    file_name_input = "../data/set_test/test_" + str(i+1) + ".nii"
-    # example_ni1 = os.path.join(data_path, file_name_input)
-    file_name_output = "../data/set_test_seg/test_" + str(i+1) + ".nii"
-    # save_example_ni1 = os.path.join(data_path, file_name_output)
-    image_segmentation(file_name_input,file_name_output, show_image=False)
+# for i in range(9, test_dataFile_size-1):
+#     file_name_input = "../data/set_test/test_" + str(i+1) + ".nii"
+#     # example_ni1 = os.path.join(data_path, file_name_input)
+#     file_name_output = "../data/set_test_seg/test_" + str(i+1) + ".nii"
+#     # save_example_ni1 = os.path.join(data_path, file_name_output)
+#     image_segmentation(file_name_input,file_name_output, show_image=False)

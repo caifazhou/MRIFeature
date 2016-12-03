@@ -288,21 +288,15 @@ def segmentateFeature(mriDataDir, mriSegDir, numSeg):
 
 # set the directories
 # dir of mri data
-testDir = '../MLP2_Tschick/data/set_test/'
-trainDir = '../MLP2_Tschick/data/set_train/'
+testDir = '../testData/testOrg/set_test/'
+trainDir = '../testData/testOrg/set_train/'
 
-numberSeg = 200
+numberSeg = 64
 # dir of segment data
-eulerScratch = "/cluster/scratch/czhou/"
-outputBaseDir = eulerScratch + "seg" + str(numberSeg) + "/"
-testSegDir = outputBaseDir + 'set_test_seg/'
-trainSegDir = outputBaseDir + 'set_train_seg/'
+testSegDir = '../testData/testSeg/set_test_seg/'
+trainSegDir = '../testData/testSeg/set_train_seg/'
 
 x, y, z = segmentateFeature(trainDir, trainSegDir, numberSeg)
-csvOutput("./features/trainFeatureSeg" + str(numberSeg) + "Stats.csv", x)
-csvOutput("./features/trainFeatureSeg" + str(numberSeg) + "Hist.csv", y)
-csvOutput("./features/trainFeatureSeg" + str(numberSeg) + "HistR.csv", z)
-x, y, z = segmentateFeature(testDir, testSegDir, numberSeg)
-csvOutput("./features/testFeatureSeg" + str(numberSeg) + "Stats.csv", x)
-csvOutput("./features/testFeatureSeg" + str(numberSeg) + "Hist.csv", y)
-csvOutput("./features/testFeatureSeg" + str(numberSeg) + "HistR.csv", z)
+csvOutput("../trainFeatureSeg" + str(numberSeg) + "Stats.csv", x)
+csvOutput("../trainFeatureSeg" + str(numberSeg) + "Hist.csv", y)
+csvOutput("../trainFeatureSeg" + str(numberSeg) + "HistR.csv", z)
